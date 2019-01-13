@@ -1,0 +1,29 @@
+[[service]]
+name = "postgresql"
+host = "localhost"
+port = 5432
+executable = "local"
+group = "default"
+  [service.src]
+  repo_url = "https://gitlab.com/gitlab-org/gitaly.git"
+  clone_depth = 1
+
+[[service]]
+name = "redis"
+host = "localhost"
+port = 6379
+executable = "local"
+group = "default"
+  [service.src]
+  repo_url = "https://gitlab.com/gitlab-org/gitaly.git"
+  clone_depth = 1
+
+[[service]]
+name = "gitaly"
+host = "localhost"
+port = 9999
+executable = "local"
+group = "default"
+  [service.src]
+  repo_url = "https://gitlab.com/gitlab-org/gitaly.git"
+  clone_depth = 1
