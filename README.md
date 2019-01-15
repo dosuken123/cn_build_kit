@@ -3,6 +3,7 @@
 ## Sample commands
 
 ```
+$ cn_build_kit clone gitaly
 $ cn_build_kit clone default
 $ cn_build_kit configure service_name
 $ cn_build_kit start service_name

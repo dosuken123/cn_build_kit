@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
-	"strings"
+
+	"github.com/dosuken123/cn_build_kit/command"
 )
 
 func main() {
@@ -11,14 +13,33 @@ func main() {
 	// fmt.Println("%+v", config)
 
 	args := os.Args
-	arg_command := strings.Title(args[1])
-	arg_targets := args[2]
 
-	fmt.Println("Command: ", arg_command)
-	fmt.Println("Targets: ", arg_targets)
+	if len(args) < 3 {
+		log.Fatal("Arguments are not enough", nil)
+	}
 
-	command := MakeInstance(arg_command)
-	command.Execute()
+	argCommand := args[1]
+	argTarget := args[2]
+
+	fmt.Println("Command: ", argCommand)
+	fmt.Println("Targetss: ", argTarget)
+
+	targets, error := ResolveTargetName(argTarget)
+
+	if error != nil {
+		log.Fatal(error)
+	}
+
+	for _, target := range targets {
+		fmt.Println("Target name is ", target.Name)
+		switch argCommand {
+		case "clone":
+			g := command.Clone{}
+			g.Execute()
+		default:
+			log.Fatal("Command Not Found", nil)
+		}
+	}
 
 	// for _, element := range conf.Services {
 	// 	fmt.Println("Name: ", element.Name)
