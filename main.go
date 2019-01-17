@@ -18,13 +18,15 @@ func main() {
 		log.Fatal("Arguments are not enough", nil)
 	}
 
-	argCommand := args[1]
-	argTarget := args[2]
+	argTarget := args[1]
+	argCommand := args[2]
 
 	fmt.Println("Command: ", argCommand)
 	fmt.Println("Targetss: ", argTarget)
 
 	targets, error := ResolveTargetName(argTarget)
+
+	fmt.Printf("targets: %+v\n", targets)
 
 	if error != nil {
 		log.Fatal(error)
@@ -32,10 +34,13 @@ func main() {
 
 	for _, target := range targets {
 		fmt.Println("Target name is ", target.Name)
+		fmt.Printf("target: %+v\n", target)
+		target.GenerateMeta()
+		fmt.Printf("target: %+v\n", target)
 		switch argCommand {
 		case "clone":
-			g := command.Clone{}
-			g.Execute()
+			c := command.Clone{Url: target.Src.RepoURL, Dir: target.Meta.SrcPath, Depth: target.Src.CloneDepth}
+			c.Execute()
 		default:
 			log.Fatal("Command Not Found", nil)
 		}

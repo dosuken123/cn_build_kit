@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"sync"
 
@@ -9,8 +10,15 @@ import (
 )
 
 type Src struct {
-	repo_url    string
-	clone_depth int
+	RepoURL    string `toml:"repo_url"`
+	CloneDepth int
+}
+
+type Meta struct {
+	SrcPath        string
+	DockerFilePath string
+	CachePath      string
+	DataPath       string
 }
 
 type Service struct {
@@ -20,6 +28,7 @@ type Service struct {
 	Executable string
 	Src        Src
 	Group      string
+	Meta       Meta
 }
 
 type Config struct {
@@ -47,6 +56,13 @@ func GetConfig() Config {
 	return configMap
 }
 
+func (s Service) GenerateMeta() {
+	s.Meta.SrcPath = "services/" + s.Name + "/src"
+	s.Meta.DockerFilePath = "services/" + s.Name + "/dockerfile"
+	s.Meta.CachePath = "services/" + s.Name + "/cache"
+	s.Meta.DataPath = "services/" + s.Name + "/data"
+}
+
 func ValidateIfServiceNameUnique() bool {
 	// TODO
 	return true
@@ -68,6 +84,7 @@ func GetService(serviceName string) (Service, error) {
 	var s Service
 	for _, service := range GetConfig().Services {
 		if service.Name == serviceName {
+			s = service
 			return s, nil
 		}
 	}
@@ -92,7 +109,9 @@ func GetAllServicesOfGroup(groupName string) ([]Service, error) {
 func ResolveTargetName(ambiguousName string) ([]Service, error) {
 	var results []Service
 	if service, error := GetService(ambiguousName); error == nil {
+		fmt.Println("1")
 		results = append(results, service)
+		fmt.Printf("service: %+v\n", service)
 		return results, nil
 	} else if services, error := GetAllServicesOfGroup(ambiguousName); error == nil {
 		results = append(results, services...)
