@@ -3,9 +3,11 @@ package command
 import "os"
 
 type Clean struct {
-	ServiceDir string
+	TargetDir []string
 }
 
 func (c Clean) Execute() {
-	os.RemoveAll(c.ServiceDir)
+	for _, targetDir := range c.TargetDir {
+		os.RemoveAll(targetDir)
+	}
 }

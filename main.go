@@ -18,10 +18,11 @@ func main() {
 
 	argTarget := args[1]
 	argCommand := args[2]
-	fmt.Printf("Arguments: Command: %+v, Target: %+v\n", argCommand, argTarget)
+	argArgs := args[3:]
+	// fmt.Printf("Arguments: Command: %+v, Target: %+v\n", argCommand, argTarget)
 
 	services, error := config.ResolveTargetName(argTarget)
-	fmt.Printf("Resolved services: %+v\n", services)
+	// fmt.Printf("Resolved services: %+v\n", services)
 
 	if error != nil {
 		log.Fatal(error)
@@ -30,8 +31,8 @@ func main() {
 	var wg sync.WaitGroup
 	for _, service := range services {
 		wg.Add(1)
-		go service.ExecuteCommand(argCommand, &wg)
+		go service.ExecuteCommand(argCommand, argArgs, &wg)
 	}
 	wg.Wait()
-	fmt.Println("All commands done")
+	fmt.Printf("DONE\n")
 }

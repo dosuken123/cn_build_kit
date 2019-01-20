@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"strings"
 )
 
 func GetAllServiceNames() []string {
@@ -42,12 +43,34 @@ func GetAllServicesOfGroup(groupName string) ([]Service, error) {
 	return services, nil
 }
 
+func GetConcatenatedServices(concatenatedName string) ([]Service, error) {
+	var services []Service
+	serviceNames := strings.Split(concatenatedName, ",")
+	for _, serviceName := range serviceNames {
+		for _, service := range GetConfig().Services {
+			if service.Name == serviceName {
+				services = append(services, service)
+				break
+			}
+		}
+	}
+
+	if len(services) == 0 {
+		return services, errors.New("Concatenated Services Not Found")
+	}
+
+	return services, nil
+}
+
 func ResolveTargetName(ambiguousName string) ([]Service, error) {
 	var results []Service
 	if service, error := GetService(ambiguousName); error == nil {
 		results = append(results, service)
 		return results, nil
 	} else if services, error := GetAllServicesOfGroup(ambiguousName); error == nil {
+		results = append(results, services...)
+		return results, nil
+	} else if services, error := GetConcatenatedServices(ambiguousName); error == nil {
 		results = append(results, services...)
 		return results, nil
 	} else {

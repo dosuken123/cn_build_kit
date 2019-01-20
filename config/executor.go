@@ -7,7 +7,7 @@ import (
 	"github.com/dosuken123/cn_build_kit/command"
 )
 
-func (s Service) ExecuteCommand(commandName string, wg *sync.WaitGroup) {
+func (s Service) ExecuteCommand(commandName string, args []string, wg *sync.WaitGroup) {
 	switch commandName {
 	case "clone":
 		if s.Src.RepoURL != "" {
@@ -15,7 +15,15 @@ func (s Service) ExecuteCommand(commandName string, wg *sync.WaitGroup) {
 			c.Execute()
 		}
 	case "clean":
-		c := command.Clean{ServiceDir: s.GetServiceDir()}
+		var c command.Clean
+		if len(args) > 0 && args[0] == "all" {
+			c = command.Clean{TargetDir: []string{s.GetServiceDir()}}
+		} else {
+			c = command.Clean{TargetDir: []string{s.GetSrcDir(), s.GetCacheDir(), s.GetDataDir(), s.GetLogDir()}}
+		}
+		c.Execute()
+	case "add_script":
+		c := command.AddScript{FileDir: s.GetScriptDir(), FileName: args[0]}
 		c.Execute()
 	default:
 		log.Fatal("Command Not Found", nil)
