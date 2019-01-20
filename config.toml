@@ -4,9 +4,6 @@ host = "localhost"
 port = 5432
 executable = "local"
 group = "default"
-  [service.src]
-  repo_url = "https://gitlab.com/gitlab-org/gitaly.git"
-  clone_depth = 1
 
 [[service]]
 name = "redis"
@@ -14,9 +11,6 @@ host = "localhost"
 port = 6379
 executable = "local"
 group = "default"
-  [service.src]
-  repo_url = "https://gitlab.com/gitlab-org/gitaly.git"
-  clone_depth = 1
 
 [[service]]
 name = "gitaly"
@@ -26,4 +20,63 @@ executable = "local"
 group = "default"
   [service.src]
   repo_url = "https://gitlab.com/gitlab-org/gitaly.git"
+  clone_depth = 1
+
+[[service]]
+name = "webpack"
+host = "localhost"
+port = 3808
+executable = "local"
+group = "default"
+
+[[service]]
+name = "workhorse"
+host = "localhost"
+port = 3808
+executable = "local"
+group = "default"
+  [service.src]
+  repo_url = "https://gitlab.com/gitlab-org/gitlab-workhorse.git"
+  clone_depth = 1
+
+[[service]]
+name = "shell"
+executable = "local"
+group = "default"
+
+[[service]]
+name = "openssh"
+executable = "local"
+group = "default"
+
+[[service]]
+name = "rails"
+host = "localhost"
+port = 8080
+executable = "local"
+group = "default"
+  [service.src]
+  repo_url = "https://gitlab.com/gitlab-org/gitlab-ce.git"
+  clone_depth = 1
+
+[[service]]
+name = "sidekiq"
+host = "localhost"
+port = 8080
+executable = "local"
+group = "default"
+
+[[service]]
+name = "spring"
+host = "localhost"
+port = 8080
+executable = "local"
+group = "default"
+
+[[service]]
+name = "runner"
+executable = "local"
+group = "default"
+  [service.src]
+  repo_url = "https://gitlab.com/gitlab-org/gitlab-runner.git"
   clone_depth = 1

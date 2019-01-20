@@ -2,8 +2,8 @@ package command
 
 import (
 	"fmt"
-
-	"github.com/libgit2/git2go"
+	"os/exec"
+	"strconv"
 )
 
 type Clone struct {
@@ -13,14 +13,21 @@ type Clone struct {
 }
 
 func (c Clone) Execute() {
-	fmt.Println("Cloning!!", c.Url)
-	fmt.Println("Cloning!!", c.Dir)
+	fmt.Printf("Cloning URL: %+v, Dir: %+v, Depth: %d\n", c.Url, c.Dir, c.Depth)
 
-	repo, err := git.Clone(c.Url, c.Dir, &git.CloneOptions{})
+	var cmd *exec.Cmd
 
-	fmt.Println("repo: %+v", repo)
+	if c.Depth > 0 {
+		cmd = exec.Command("git", "clone", c.Url, c.Dir, "--depth", strconv.Itoa(c.Depth))
+	} else {
+		cmd = exec.Command("git", "clone", c.Url, c.Dir)
+	}
+
+	stdout, err := cmd.Output()
 
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("stdout: ", stdout)
 }

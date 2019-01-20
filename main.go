@@ -4,14 +4,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync"
 
-	"github.com/dosuken123/cn_build_kit/command"
+	"github.com/dosuken123/cn_build_kit/config"
 )
 
 func main() {
-	// config := GetConfig()
-	// fmt.Println("%+v", config)
-
 	args := os.Args
 
 	if len(args) < 3 {
@@ -20,37 +18,20 @@ func main() {
 
 	argTarget := args[1]
 	argCommand := args[2]
+	fmt.Printf("Arguments: Command: %+v, Target: %+v\n", argCommand, argTarget)
 
-	fmt.Println("Command: ", argCommand)
-	fmt.Println("Targetss: ", argTarget)
-
-	targets, error := ResolveTargetName(argTarget)
-
-	fmt.Printf("targets: %+v\n", targets)
+	services, error := config.ResolveTargetName(argTarget)
+	fmt.Printf("Resolved services: %+v\n", services)
 
 	if error != nil {
 		log.Fatal(error)
 	}
 
-	for _, target := range targets {
-		fmt.Println("Target name is ", target.Name)
-		fmt.Printf("target: %+v\n", target)
-		target.GenerateMeta()
-		fmt.Printf("target: %+v\n", target)
-		switch argCommand {
-		case "clone":
-			c := command.Clone{Url: target.Src.RepoURL, Dir: target.Meta.SrcPath, Depth: target.Src.CloneDepth}
-			c.Execute()
-		default:
-			log.Fatal("Command Not Found", nil)
-		}
+	var wg sync.WaitGroup
+	for _, service := range services {
+		wg.Add(1)
+		go service.ExecuteCommand(argCommand, &wg)
 	}
-
-	// for _, element := range conf.Services {
-	// 	fmt.Println("Name: ", element.Name)
-	// 	fmt.Println("Host: ", element.Host)
-	// }
-
-	// g := git.Clone{Url: "aa", Depth: 1}
-	// g.Execute()
+	wg.Wait()
+	fmt.Println("All commands done")
 }

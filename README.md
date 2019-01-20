@@ -3,10 +3,12 @@
 ## Sample commands
 
 ```
-$ cn_build_kit clone gitaly
-$ cn_build_kit clone default
-$ cn_build_kit configure service_name
-$ cn_build_kit start service_name
-$ cn_build_kit clean service_name1,service_name2
-$ cn_build_kit clean default
+$ cn_build_kit gitaly clone
+$ cn_build_kit default clone
+$ cn_build_kit service_name configure
+$ cn_build_kit service_name start
+$ cn_build_kit service_name1,service_name2 clean
+$ cn_build_kit default clean 
 ```
+
+
