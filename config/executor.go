@@ -59,6 +59,11 @@ func (s Service) ExecuteDefaultCommand(commandName string, args []string) error 
 			c = command.Clean{TargetDir: []string{s.GetSrcDir(), s.GetCacheDir(), s.GetDataDir(), s.GetLogDir()}}
 		}
 		c.Execute()
+	case "pull":
+		if s.Src.RepoURL != "" {
+			c := command.Pull{SrcDir: s.GetSrcDir(), Remote: "origin", Branch: "master"}
+			c.Execute()
+		}
 	case "add_script":
 		c := command.AddScript{FileDir: s.GetScriptDir(), FileName: args[0]}
 		c.Execute()

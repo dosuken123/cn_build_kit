@@ -19,10 +19,8 @@ func main() {
 	argTarget := args[1]
 	argCommand := args[2]
 	argArgs := args[3:]
-	// fmt.Printf("Arguments: Command: %+v, Target: %+v\n", argCommand, argTarget)
 
 	services, error := config.ResolveTargetName(argTarget)
-	// fmt.Printf("Resolved services: %+v\n", services)
 
 	if error != nil {
 		log.Fatal(error)
