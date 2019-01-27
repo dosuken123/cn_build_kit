@@ -3,9 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sync"
 )
@@ -33,11 +31,7 @@ func (s Service) ExecuteCustomCommand(commandName string, args []string) error {
 		return errors.New("Default command does not exist")
 	}
 
-	out, err := exec.Command(scriptPath).Output()
-	if err != nil {
-		log.Fatal("Failed to execute custom command ", err)
-	}
-	fmt.Printf("output is %s\n", out)
+	s.ExecuteCommandWithLog(commandName, scriptPath)
 
 	return nil
 }

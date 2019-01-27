@@ -5,9 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -16,22 +14,13 @@ func (s Service) Clone(args []string) {
 		return
 	}
 
-	var cmd *exec.Cmd
+	cmdName := fmt.Sprintf("git clone %s %s", s.Src.RepoURL, s.GetSrcDir())
 
 	if s.Src.CloneDepth > 0 {
-		cmd = exec.Command("git", "clone", s.Src.RepoURL, s.GetSrcDir(),
-			"--depth", strconv.Itoa(s.Src.CloneDepth))
-	} else {
-		cmd = exec.Command("git", "clone", s.Src.RepoURL, s.GetSrcDir())
+		cmdName += fmt.Sprintf(" --depth %d", s.Src.CloneDepth)
 	}
 
-	stdout, err := cmd.Output()
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("stdout: %s\n", stdout)
+	s.ExecuteCommandWithLog("clone", cmdName)
 }
 
 func (s Service) Pull(args []string) {
@@ -39,20 +28,8 @@ func (s Service) Pull(args []string) {
 		return
 	}
 
-	var cmd *exec.Cmd
-	var stdout []byte
-
-	cmd = exec.Command("git", "checkout", "master")
-	cmd.Dir = s.GetSrcDir()
-	stdout, _ = cmd.Output()
-
-	fmt.Printf("stdout: %s\n", stdout)
-
-	cmd = exec.Command("git", "pull", "origin", "master")
-	cmd.Dir = s.GetSrcDir()
-	stdout, _ = cmd.Output()
-
-	fmt.Printf("stdout: %s\n", stdout)
+	s.ExecuteCommandWithLog("pull", "git checkout master")
+	s.ExecuteCommandWithLog("pull", "git pull origin master")
 }
 
 func (s Service) Clean(args []string) {
@@ -69,7 +46,7 @@ func (s Service) Clean(args []string) {
 }
 
 func (s Service) AddScript(args []string) {
-	parsedArgs := ParseArgSet(args)
+	parsedArgs := parseArgSet(args)
 
 	if _, err := os.Stat(s.GetScriptDir()); os.IsNotExist(err) {
 		os.MkdirAll(s.GetScriptDir(), os.ModePerm)
@@ -91,7 +68,7 @@ func (s Service) AddScript(args []string) {
 	}
 }
 
-func ParseArgSet(args []string) map[string]string {
+func parseArgSet(args []string) map[string]string {
 	m := make(map[string]string)
 
 	for _, arg := range args {
