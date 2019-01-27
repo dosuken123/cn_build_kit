@@ -6,7 +6,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/dosuken123/cn_build_kit/config"
+	"github.com/dosuken123/cn_build_kit/service"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	argCommand := args[2]
 	argArgs := args[3:]
 
-	services, error := config.ResolveTargetName(argTarget)
+	services, error := service.ResolveTargetName(argTarget)
 
 	if error != nil {
 		log.Fatal(error)

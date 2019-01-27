@@ -1,4 +1,4 @@
-package config
+package service
 
 import (
 	"errors"
@@ -8,8 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
-
-	"github.com/dosuken123/cn_build_kit/command"
 )
 
 func (s Service) ExecuteCommand(commandName string, args []string, wg *sync.WaitGroup) {
@@ -37,7 +35,7 @@ func (s Service) ExecuteCustomCommand(commandName string, args []string) error {
 
 	out, err := exec.Command(scriptPath).Output()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to execute custom command ", err)
 	}
 	fmt.Printf("output is %s\n", out)
 
@@ -47,26 +45,13 @@ func (s Service) ExecuteCustomCommand(commandName string, args []string) error {
 func (s Service) ExecuteDefaultCommand(commandName string, args []string) error {
 	switch commandName {
 	case "clone":
-		if s.Src.RepoURL != "" {
-			c := command.Clone{Url: s.Src.RepoURL, Dir: s.GetSrcDir(), Depth: s.Src.CloneDepth}
-			c.Execute()
-		}
+		s.Clone(args)
 	case "clean":
-		var c command.Clean
-		if len(args) > 0 && args[0] == "all" {
-			c = command.Clean{TargetDir: []string{s.GetServiceDir()}}
-		} else {
-			c = command.Clean{TargetDir: []string{s.GetSrcDir(), s.GetCacheDir(), s.GetDataDir(), s.GetLogDir()}}
-		}
-		c.Execute()
+		s.Clean(args)
 	case "pull":
-		if s.Src.RepoURL != "" {
-			c := command.Pull{SrcDir: s.GetSrcDir(), Remote: "origin", Branch: "master"}
-			c.Execute()
-		}
+		s.Pull(args)
 	case "add_script":
-		c := command.AddScript{FileDir: s.GetScriptDir(), FileName: args[0]}
-		c.Execute()
+		s.AddScript(args)
 	default:
 		return errors.New("Default command does not exist")
 	}
