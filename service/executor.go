@@ -11,6 +11,8 @@ import (
 func (s Service) ExecuteCommand(commandName string, args []string, wg *sync.WaitGroup) {
 	var err error
 
+	s.CleanLog(commandName)
+
 	err = s.ExecuteCustomCommand(commandName, args)
 
 	if err != nil {

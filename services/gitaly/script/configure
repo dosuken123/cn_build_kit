@@ -1,12 +1,39 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-TODO: Realtime Logger is not working
+mkdir -p ${CN_SELF_CACHE_DIR}
+mkdir -p ${CN_SELF_DATA_DIR}
 
-printenv
+if [ ! -f ${CN_SELF_CACHE_DIR}/config.toml ]
+then
+    host="${CN_SELF_HOST}"
 
-if [ -z "$MY_VAR" ]; then
-  echo "variable is emptyr!"
+    if [ "${CN_SELF_EXECUTABLE}" == 'docker' ]
+    then
+        host="0.0.0.0"
+    fi
+
+    sed \
+        -e "s|^socket_path|# socket_path|" \
+        -e "s|# listen_addr.*|listen_addr = \"${host}:${CN_SELF_PORT}\"|" \
+        -e "s|^bin_dir.*|bin_dir = \"${CN_SELF_CACHE_DIR}/bin\"|" \
+        -e "s|# prometheus_listen_addr|prometheus_listen_addr|" \
+        -e "s|# \[logging\]|\[logging\]|" \
+        -e "s|# level = \"warn\"|level = \"warn\"|" \
+        -e "s|path = \"/home/git/repositories\"|path = \"${CN_SELF_DATA_DIR}/repositories\"|" \
+        -e "s|dir = \"/home/git/gitaly/ruby\"|dir = \"${CN_SELF_CACHE_DIR}/ruby\"|" \
+        -e "s|dir = \"/home/git/gitlab-shell\"|dir = \"${CN_SHELL_SRC_DIR}\"|" \
+        ${CN_SELF_SRC_DIR}/config.toml.example > ${CN_SELF_CACHE_DIR}/config.toml
 fi
 
-echo "MY_VAR is $MY_VAR"
-echo "CN_OPENSSH_DATA_DIR is $CN_OPENSSH_DATA_DIR"
+export GEM_PATH="${CN_SELF_CACHE_DIR}"
+export BUNDLE_PATH="${CN_SELF_CACHE_DIR}"
+
+if [ ! -d ${CN_SELF_CACHE_DIR}/bin ]
+then
+    make -C ${CN_SELF_SRC_DIR} assemble \
+        ASSEMBLY_ROOT=${CN_SELF_CACHE_DIR} \
+        BUNDLE_FLAGS=--no-deployment \
+        BUILD_TAGS="tracer_static tracer_static_jaeger"
+fi
+
+mkdir -p ${CN_SELF_DATA_DIR}/repositories

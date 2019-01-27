@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -47,6 +48,8 @@ func (s Service) GetVariables() map[string]string {
 	variables["CN_SELF_HOST"] = s.Host
 	variables["CN_SELF_PORT"] = strconv.Itoa(s.Port)
 	variables["CN_SELF_EXECUTABLE"] = s.Executable
+
+	variables["GOPATH"] = filepath.Join(s.GetServiceDir(), "go")
 
 	return variables
 }
