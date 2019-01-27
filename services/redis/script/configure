@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${__dir}/../../../global
+init_script
+
+mkdir -p ${redis_cache_dir}
+
+if [ ! -f ${redis_cache_dir}/redis.conf ]
+then
+	sed "s|port 0|port ${redis_port}|" \
+        ${redis_example_dir}/redis.conf.example > ${redis_cache_dir}/redis.conf
+fi

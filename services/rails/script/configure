@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${__dir}/../../../global
+init_script
+
+mkdir -p ${rails_cache_dir}
+mkdir -p ${rails_data_dir}
+
+if [ ! -f ${rails_src_dir}/config/gitlab.yml ]
+then
+	sed -e "s|/home/git/gitaly/bin|${gitaly_cache_dir}/bin|"\
+        -e "s|/home/git/repositories|${gitaly_data_dir}/repositories|"\
+        -e "s|gitaly_address: unix:/home/git/gitlab/tmp/sockets/private/gitaly.socket|gitaly_address: tcp://${gitaly_host}:${gitaly_port}|"\
+        -e "s|/home/git/gitlab-shell|${shell_src_dir}|"\
+        -e "s|# secret_file: /home/git/gitlab/.gitlab_shell_secret|secret_file: ${shell_src_dir}/.gitlab_shell_secret|"\
+        -e "s|/home/git/gitlab/.gitlab_workhorse_secret|${rails_src_dir}/.gitlab_workhorse_secret|"\
+		-e "s|/usr/bin/git|${git_bin}|"\
+		${rails_src_dir}/config/gitlab.yml.example > ${rails_src_dir}/config/gitlab.yml
+
+    # TODO: We need an unified way to configure yml
+	hostname=${workhorse_host} port=${workhorse_port} webpack_port=${webpack_port} \
+		${rails_example_dir}/edit-gitlab.yml ${rails_src_dir}/config/gitlab.yml
+fi
+
+if [ ! -f ${rails_src_dir}/config/database.yml ]
+then
+    sed -e "s|/home/git/postgresql|${postgresql_data_dir}|"\
+        -e "s|5432|${postgresql_port}|"\
+        -e "s|gitlabhq_development|gitlabhq_development_${edition}|"\
+        -e "s|gitlabhq_test|gitlabhq_test_${edition}|"\
+        ${rails_example_dir}/database.yml.example > ${rails_src_dir}/config/database.yml
+fi
+
+if [ ! -f ${rails_src_dir}/config/unicorn.rb ]
+then
+    sed -e "s|listen '/home/git/gitlab.socket'|listen '${self_host}:${self_port}'|" \
+        -e "s|/home/git/gitlab/|${rails_src_dir}/|" \
+        ${rails_src_dir}/config/unicorn.rb.example.development > ${rails_src_dir}/config/unicorn.rb
+fi
+
+if [ ! -f ${rails_src_dir}/config/puma.rb ]
+then
+    sed -e "/stdout_redirect '\/home\/git\/gitlab\/log\/puma.stdout.log',/d" \
+        -e "/  '\/home\/git\/gitlab\/log\/puma.stderr.log',/d" \
+        -e "/  true/d" \
+        -e "s|bind 'unix:///home/git/gitlab.socket'|bind 'tcp://${self_host}:${self_port}'|" \
+        -e "s|/home/git/gitlab/|${rails_src_dir}/|" \
+        ${rails_src_dir}/config/puma.example.development.rb > ${rails_src_dir}/config/puma.rb
+fi
+
+if [ ! -f ${rails_src_dir}/config/resque.yml ]
+then
+	sed "s|unix:/home/git/redis/redis.socket|tcp:${redis_host}:${redis_port}|" \
+        ${rails_example_dir}/redis.resque.yml.example > ${rails_src_dir}/config/resque.yml
+fi
+
+if [ ! -d ${rails_src_dir}/public/uploads ]
+then
+	mkdir ${rails_src_dir}/public/uploads
+fi
+
+cd ${rails_src_dir}
+export GEM_PATH=${rails_cache_dir}
+export BUNDLE_PATH=${rails_cache_dir}
+
+# TODO: Parallelization for bundle install and yarn install
+# Maybe create a fucntions
+if [ ! -f ${rails_cache_dir}/bundle-installed ]
+then
+    bundle install --jobs 8
+    touch ${rails_cache_dir}/bundle-installed
+fi
+
+# TODO: If `node_modules` directory does not exist
+if [ ! -f ${rails_cache_dir}/yarn-installed ]
+then
+    yarn install --pure-lockfile
+	touch ${rails_cache_dir}/yarn-installed
+fi
+
+bundle exec rake gettext:compile
+
+if [ -d "${rails_src_dir}/.git" ]
+then
+    git -C ${rails_src_dir} checkout locale/*/gitlab.po
+fi

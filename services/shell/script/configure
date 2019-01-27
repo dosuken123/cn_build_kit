@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${__dir}/../../../global
+init_script
+
+# The tools under gitlab-shell/bin directory are refered from gitlab-rails and gitaly
+# #{kit_root}/gitlab-shell is a symlink. It points to the gitlab-shell project under #{GOPATH}
+
+mkdir -p ${shell_cache_dir}
+
+if [ ! -f ${shell_src_dir}/.gitlab_shell_secret ]
+then
+    echo "shell secret" > ${shell_src_dir}/.gitlab_shell_secret
+fi
+
+if [ ! -f ${shell_src_dir}/config.yml ]
+then
+    host="${rails_host}"
+
+    if [ "${self_executable}" == "docker" ] && [ "${rails_executable}" == "local" ]
+    then
+        host="${docker_host}"
+    fi
+
+	sed \
+      -e "s|/home/git/.ssh|${shell_data_dir}/.ssh|"\
+      -e "s|/home/git/gitlab-shell|${shell_src_dir}|"\
+	  -e "s|^gitlab_url:.*|gitlab_url: http://${host}:${rails_port}/|"\
+	  ${shell_src_dir}/config.yml.example > ${shell_src_dir}/config.yml
+    #   -e "s|/usr/bin/redis-cli|${redis_cli_bin}|"\ # Maybe no need?
+	#   -e "s|^  socket: .*|  socket: ${redis_cache_dir}/redis.socket|"\ # Maybe no need?
+fi
+
+if [ ! -f ${shell_cache_dir}/bundle-installed ]
+then
+	cd ${shell_src_dir}
+    bundle install --jobs 8 --path ${shell_cache_dir}
+	touch ${shell_cache_dir}/bundle-installed
+fi
+
+${shell_src_dir}/bin/compile
+${shell_src_dir}/bin/install

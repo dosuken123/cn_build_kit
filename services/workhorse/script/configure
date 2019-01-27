@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${__dir}/../../../global
+init_script
+
+mkdir -p ${workhorse_cache_dir}
+
+cd ${workhorse_src_dir}
+make install PREFIX="${workhorse_cache_dir}" BUILD_TAGS="tracer_static tracer_static_jaeger"
+
+if [ ! -f ${workhorse_cache_dir}/config.toml ]
+then
+	sed "s|unix:///home/git/redis/redis.socket|tcp://${redis_host}:${redis_port}|" \
+        ${workhorse_example_dir}/config.toml.example > ${workhorse_cache_dir}/config.toml
+fi

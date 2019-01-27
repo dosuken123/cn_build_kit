@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${__dir}/../../../global
+init_script
+
+mkdir -p ${runner_cache_dir}
+mkdir -p ${runner_data_dir}
+
+cd ${runner_src_dir}
+make build_simple
+make docker

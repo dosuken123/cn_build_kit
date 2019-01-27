@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${__dir}/../../../global
+init_script
+
+mkdir -p ${openssh_cache_dir}
+
+if [ ! -f ${openssh_cache_dir}/sshd_config ]
+then
+	sed -e "s|/home/git/openssh/ssh_host_rsa_key|${openssh_cache_dir}/ssh_host_rsa_key|g" \
+        -e "s|/home/git/.ssh/authorized_keys|/${shell_data_dir}/authorized_keys|g" \
+		-e "s/GDK_USERNAME/${user_name}/g" \
+		${openssh_example_dir}/sshd_config.example > ${openssh_cache_dir}/sshd_config
+fi
+
+if [ ! -f ${openssh_cache_dir}/ssh_host_rsa_key ]
+then
+    ssh-keygen -f ${openssh_cache_dir}/ssh_host_rsa_key -N '' -t rsa
+fi

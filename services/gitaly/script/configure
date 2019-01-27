@@ -1,3 +1,12 @@
 #!/bin/bash
 
-echo hoges
+TODO: Realtime Logger is not working
+
+printenv
+
+if [ -z "$MY_VAR" ]; then
+  echo "variable is emptyr!"
+fi
+
+echo "MY_VAR is $MY_VAR"
+echo "CN_OPENSSH_DATA_DIR is $CN_OPENSSH_DATA_DIR"

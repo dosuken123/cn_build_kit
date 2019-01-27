@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source ${__dir}/../../../global
+init_script
+
+mkdir -p ${postgresql_data_dir}
+
+if [ ! -d ${postgresql_data_dir}/data ]
+then
+    ${POSTGRES_BIN_DIR}/initdb --locale=C -E utf-8 ${postgresql_data_dir}/data
+fi

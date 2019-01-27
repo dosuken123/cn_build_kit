@@ -2,19 +2,21 @@ package service
 
 import (
 	"errors"
+	"log"
 	"strings"
 )
 
-func GetAllServiceNames() []string {
-	unique := make(map[string]bool)
-	var names []string
+func GetAllServices() []Service {
+	var services []Service
 	for _, service := range GetConfig().Services {
-		if _, value := unique[service.Group]; !value {
-			names = append(names, service.Name)
-			unique[service.Name] = true
-		}
+		services = append(services, service)
 	}
-	return names
+
+	if len(services) == 0 {
+		log.Fatal("Cannot find any services")
+	}
+
+	return services
 }
 
 func GetService(serviceName string) (Service, error) {

@@ -2,12 +2,14 @@ package service
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 func (s Service) Log(commandName string, text string) {
@@ -25,15 +27,55 @@ func (s Service) ExecuteCommandWithLog(commandName string, script string) {
 	logger := initLogger(logFile)
 
 	cmdArgs := strings.Fields(script)
+	fmt.Printf("cmdArgs %+v\n", cmdArgs)
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:len(cmdArgs)]...)
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "MY_VAR=1")
+
+	// for key, value := range s.GetVariables() {
+	// 	cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	// }
+
+	fmt.Printf("aa %+v\n", cmd)
+
+	var wg sync.WaitGroup
 
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
 	cmdReader := io.MultiReader(stdout, stderr)
+	reader := bufio.NewReader(cmdReader)
 
 	cmd.Start()
-	go print(cmdReader, logger)
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		line, _, _ := reader.ReadLine()
+		logger.Printf("%s\n", line)
+	}()
+
+	go func() {
+		defer wg.Done()
+		line, _, _ := reader.ReadLine()
+		logger.Printf("%s\n", line)
+	}()
+
+	wg.Wait()
+
 	cmd.Wait()
+}
+
+func copyLogs(r io.Reader, logfn func(args ...interface{})) {
+	buf := make([]byte, 80)
+	for {
+		n, err := r.Read(buf)
+		if n > 0 {
+			logfn(buf[0:n])
+		}
+		if err != nil {
+			break
+		}
+	}
 }
 
 func print(reader io.Reader, loggerOut *log.Logger) {
