@@ -32,6 +32,8 @@ func (s Service) ExecuteCommandWithLog(commandName string, script string) {
 
 	cmdArgs := strings.Fields(script)
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:len(cmdArgs)]...)
+	// cmd.SysProcAttr = &syscall.SysProcAttr{}
+	// cmd.SysProcAttr.Credential = &syscall.Credential{Uid: s.GetUIDInt(), Gid: s.GetGIDInt()}
 	cmd.Env = os.Environ()
 
 	for key, value := range s.GetVariables() {

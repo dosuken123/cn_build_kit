@@ -7,6 +7,14 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+type User struct {
+	Name    string `toml:"name"`
+	Group   string `toml:"group"`
+	GID     string `toml:"gid"`
+	UID     string `toml:"uid"`
+	HomeDir string `toml:"home_dir"`
+}
+
 type Src struct {
 	RepoURL    string `toml:"repo_url"`
 	CloneDepth int    `toml:"clone_depth"`
@@ -19,6 +27,7 @@ type Service struct {
 	Executable string
 	Src        Src
 	Group      string
+	User       User
 }
 
 type Config struct {

@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -11,12 +12,16 @@ import (
 func (s Service) ExecuteCommand(commandName string, args []string, wg *sync.WaitGroup) {
 	var err error
 
+	if error := s.EnsureUser(); error != nil {
+		log.Fatal(error)
+	}
+
 	s.CleanLog(commandName)
 
-	err = s.ExecuteCustomCommand(commandName, args)
+	err = s.executeCustomCommand(commandName, args)
 
 	if err != nil {
-		err = s.ExecuteDefaultCommand(commandName, args)
+		err = s.executeDefaultCommand(commandName, args)
 	}
 
 	if err != nil {
@@ -26,7 +31,7 @@ func (s Service) ExecuteCommand(commandName string, args []string, wg *sync.Wait
 	wg.Done()
 }
 
-func (s Service) ExecuteCustomCommand(commandName string, args []string) error {
+func (s Service) executeCustomCommand(commandName string, args []string) error {
 	scriptPath := filepath.Join(s.GetScriptDir(), commandName)
 
 	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
@@ -38,7 +43,7 @@ func (s Service) ExecuteCustomCommand(commandName string, args []string) error {
 	return nil
 }
 
-func (s Service) ExecuteDefaultCommand(commandName string, args []string) error {
+func (s Service) executeDefaultCommand(commandName string, args []string) error {
 	switch commandName {
 	case "clone":
 		s.Clone(args)
