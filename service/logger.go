@@ -24,7 +24,7 @@ func (s Service) Log(commandName string, text string) {
 	logger.Println(text)
 }
 
-func (s Service) ExecuteCommandWithLog(commandName string, script string) {
+func (s Service) ExecuteCommandWithLog(commandName string, script string) error {
 	logFile := openFile(s.GetLogDir(), commandName)
 	defer logFile.Close()
 
@@ -46,6 +46,8 @@ func (s Service) ExecuteCommandWithLog(commandName string, script string) {
 	done := make(chan struct{})
 
 	go func() {
+		logger.Printf("$%s\n", script)
+
 		for scanner.Scan() {
 			logger.Printf("%s\n", scanner.Text())
 		}
@@ -57,7 +59,7 @@ func (s Service) ExecuteCommandWithLog(commandName string, script string) {
 
 	<-done
 
-	cmd.Wait()
+	return cmd.Wait()
 }
 
 func print(reader io.Reader, loggerOut *log.Logger) {

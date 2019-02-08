@@ -5,7 +5,9 @@ port = 5432
 executable = "local"
 group = "default"
   [service.user]
-  name = "git"
+  name = "postgres"
+  [service.variables]
+  POSTGRES_BIN_DIR = "/usr/lib/postgresql/9.6/bin/"
 
 [[service]]
 name = "redis"

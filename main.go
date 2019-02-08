@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 	"syscall"
 
 	"github.com/dosuken123/cn_build_kit/service"
@@ -25,17 +24,28 @@ func main() {
 	argCommand := args[2]
 	argArgs := args[3:]
 
-	services, error := service.ResolveTargetName(argTarget)
+	services, err := service.ResolveTargetName(argTarget)
 
-	if error != nil {
-		log.Fatal(error)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	var wg sync.WaitGroup
-	for _, service := range services {
-		wg.Add(1)
-		go service.ExecuteCommand(argCommand, argArgs, &wg)
+	chans := make([]chan bool, len(services))
+	for i, srv := range services {
+		chans[i] = make(chan bool)
+
+		go func(s service.Service, command string, args []string, c chan bool) {
+			err := srv.ExecuteCommand(command, args)
+			if err != nil {
+				log.Printf("[ERROR] Command execution failure. Service: %v, Command: %v, Error: %v\n", s.Name, command, err)
+				os.Exit(1)
+			}
+			c <- true
+		}(srv, argCommand, argArgs, chans[i])
 	}
-	wg.Wait()
+
+	for i := range services {
+		<-chans[i]
+	}
 	fmt.Printf("DONE\n")
 }

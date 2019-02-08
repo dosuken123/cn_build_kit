@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+rm -f ${CN_OPENSSH_CACHE_DIR}/sshd_config
+rm -f ${CN_OPENSSH_CACHE_DIR}/ssh_host_rsa_key*

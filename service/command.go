@@ -9,35 +9,45 @@ import (
 	"strings"
 )
 
-func (s Service) Clone(args []string) {
+func (s Service) Clone(args []string) error {
 	if s.Src.RepoURL == "" {
-		return
+		return nil
 	}
 
-	cmdName := fmt.Sprintf("git clone %s %s", s.Src.RepoURL, s.GetSrcDir())
+	depth := ""
 
 	if s.Src.CloneDepth > 0 {
-		cmdName += fmt.Sprintf(" --depth %d", s.Src.CloneDepth)
+		depth = fmt.Sprintf(" --depth %d", s.Src.CloneDepth)
 	}
 
-	s.ExecuteCommandWithLog("clone", cmdName)
+	cmdName := fmt.Sprintf("sudo --user %s git clone %s %s %s", s.GetUserName(), depth, s.Src.RepoURL, s.GetSrcDir())
+
+	if err := s.ExecuteCommandWithLog("clone", cmdName); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (s Service) Pull(args []string) {
+func (s Service) Pull(args []string) error {
 	if s.Src.RepoURL == "" {
-		return
+		return nil
 	}
 
 	cmdName := fmt.Sprintf("sudo --user %s %s", s.GetUserName(), "git checkout master")
-
-	s.ExecuteCommandWithLog("pull", cmdName)
+	if err := s.ExecuteCommandWithLog("pull", cmdName); err != nil {
+		return err
+	}
 
 	cmdName = fmt.Sprintf("sudo --user %s %s", s.GetUserName(), "git pull origin master")
+	if err := s.ExecuteCommandWithLog("pull", cmdName); err != nil {
+		return err
+	}
 
-	s.ExecuteCommandWithLog("pull", cmdName)
+	return nil
 }
 
-func (s Service) Clean(args []string) {
+func (s Service) Clean(args []string) error {
 	var targetDirs []string
 	if len(args) > 0 && args[0] == "all" {
 		targetDirs = append(targetDirs, s.GetServiceDir())
@@ -48,9 +58,11 @@ func (s Service) Clean(args []string) {
 	for _, targetDir := range targetDirs {
 		os.RemoveAll(targetDir)
 	}
+
+	return nil
 }
 
-func (s Service) AddScript(args []string) {
+func (s Service) AddScript(args []string) error {
 	parsedArgs := parseArgSet(args)
 
 	if _, err := os.Stat(s.GetScriptDir()); os.IsNotExist(err) {
@@ -75,24 +87,31 @@ func (s Service) AddScript(args []string) {
 	if val, ok := parsedArgs["script"]; ok {
 		ioutil.WriteFile(scriptPath, []byte(val), os.ModePerm)
 	}
+
+	return nil
 }
 
-func (s Service) AddExample(args []string) {
+func (s Service) AddExample(args []string) error {
 	parsedArgs := parseArgSet(args)
 
 	cmdName := fmt.Sprintf("sudo --user %s mkdir -p --mode %s %s", s.GetUserName(), "777", s.GetExampleDir())
-
-	s.ExecuteCommandWithLog("add_example", cmdName)
+	if err := s.ExecuteCommandWithLog("add_example", cmdName); err != nil {
+		return err
+	}
 
 	examplePath := filepath.Join(s.GetExampleDir(), parsedArgs["name"])
 
 	cmdName = fmt.Sprintf("sudo --user %s touch %s", s.GetUserName(), examplePath)
-
-	s.ExecuteCommandWithLog("add_example", cmdName)
+	if err := s.ExecuteCommandWithLog("add_example", cmdName); err != nil {
+		return err
+	}
 
 	cmdName = fmt.Sprintf("sudo --user %s chmod %s %s", s.GetUserName(), "777", examplePath)
+	if err := s.ExecuteCommandWithLog("add_example", cmdName); err != nil {
+		return err
+	}
 
-	s.ExecuteCommandWithLog("add_example", cmdName)
+	return nil
 }
 
 func parseArgSet(args []string) map[string]string {

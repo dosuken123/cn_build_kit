@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 
-__dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source ${__dir}/../../../global
-init_script
+mkdir -p ${CN_POSTGRESQL_DATA_DIR}
 
-mkdir -p ${postgresql_data_dir}
-
-if [ ! -d ${postgresql_data_dir}/data ]
+if [ ! -d ${CN_POSTGRESQL_DATA_DIR}/data ]
 then
-    ${POSTGRES_BIN_DIR}/initdb --locale=C -E utf-8 ${postgresql_data_dir}/data
+    ${POSTGRES_BIN_DIR}/initdb --locale=C -E utf-8 ${CN_POSTGRESQL_DATA_DIR}/data
 fi

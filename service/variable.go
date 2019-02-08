@@ -37,6 +37,10 @@ func (s Service) GetVariables() map[string]string {
 		variables[fmt.Sprintf("CN_%s_EXECUTABLE", strings.ToUpper(service.Name))] = service.Executable
 	}
 
+	for key, value := range s.Variables {
+		variables[key] = value
+	}
+
 	variables["CN_SELF_DIR"] = s.GetServiceDir()
 	variables["CN_SELF_SCRIPT_DIR"] = s.GetScriptDir()
 	variables["CN_SELF_SRC_DIR"] = s.GetSrcDir()

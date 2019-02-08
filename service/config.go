@@ -20,6 +20,11 @@ type Src struct {
 	CloneDepth int    `toml:"clone_depth"`
 }
 
+type Variable struct {
+	Key   string `toml:"repo_url"`
+	Value string `toml:"clone_depth"`
+}
+
 type Service struct {
 	Name       string
 	Host       string
@@ -28,6 +33,7 @@ type Service struct {
 	Src        Src
 	Group      string
 	User       User
+	Variables  map[string]string
 }
 
 type Config struct {

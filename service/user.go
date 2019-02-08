@@ -45,7 +45,7 @@ func (s Service) addGroup() string {
 
 	cmdName := fmt.Sprintf("sudo addgroup %s %s", gid, groupName)
 
-	s.ExecuteCommandWithLog("create_user", cmdName)
+	s.ExecuteCommandWithLog("ensure_user", cmdName)
 
 	return groupName
 }
@@ -74,20 +74,18 @@ func (s Service) addUser(groupName string) string {
 
 	cmdName := fmt.Sprintf("sudo adduser %s --gid %s %s --shell /bin/bash --gecos \"\" --disabled-password %s", uid, g.Gid, homeDir, s.User.Name)
 
-	s.ExecuteCommandWithLog("create_user", cmdName)
+	s.ExecuteCommandWithLog("ensure_user", cmdName)
 
 	return s.User.Name
 }
 
 func (s Service) correctPermission(groupName string, userName string) string {
 	cmdName := fmt.Sprintf("sudo chown -R %s:%s %s", groupName, userName, s.GetServiceDir())
-
-	s.ExecuteCommandWithLog("create_user", cmdName)
+	s.ExecuteCommandWithLog("ensure_user", cmdName)
 
 	// cmdName = fmt.Sprintf("sudo chmod -R g+wrx %s", s.GetServiceDir())
 	cmdName = fmt.Sprintf("sudo chmod -R 777 %s", s.GetServiceDir())
-
-	s.ExecuteCommandWithLog("create_user", cmdName)
+	s.ExecuteCommandWithLog("ensure_user", cmdName)
 
 	return s.User.Name
 }
@@ -118,8 +116,7 @@ func (s Service) addCurrentUserToGroup(groupName string) {
 	}
 
 	cmdName := fmt.Sprintf("sudo usermod --append --groups %s %s", groupName, u.Name)
-
-	s.ExecuteCommandWithLog("create_user", cmdName)
+	s.ExecuteCommandWithLog("ensure_user", cmdName)
 }
 
 func (s Service) GetUserName() string {

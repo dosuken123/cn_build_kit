@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+set -e
+
+rm -rf ${CN_SELF_CACHE_DIR}/bin
+rm -f ${CN_SELF_CACHE_DIR}/config.toml
+rm -f ${CN_SELF_CACHE_DIR}/gitaly.socket
+rm -f ${CN_SELF_CACHE_DIR}/bundle-installed
+
 mkdir -p ${CN_SELF_CACHE_DIR}
 mkdir -p ${CN_SELF_DATA_DIR}
 
@@ -28,6 +35,8 @@ fi
 export GEM_PATH="${CN_SELF_CACHE_DIR}"
 export BUNDLE_PATH="${CN_SELF_CACHE_DIR}"
 
+echo "start building........."
+
 if [ ! -d ${CN_SELF_CACHE_DIR}/bin ]
 then
     make -C ${CN_SELF_SRC_DIR} assemble \
@@ -35,5 +44,7 @@ then
         BUNDLE_FLAGS=--no-deployment \
         BUILD_TAGS="tracer_static tracer_static_jaeger"
 fi
+
+echo "finished building........."
 
 mkdir -p ${CN_SELF_DATA_DIR}/repositories
