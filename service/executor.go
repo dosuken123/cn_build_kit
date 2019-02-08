@@ -12,6 +12,8 @@ import (
 func (s Service) ExecuteCommand(commandName string, args []string, wg *sync.WaitGroup) {
 	var err error
 
+	defer wg.Done()
+
 	if error := s.EnsureUser(); error != nil {
 		log.Fatal(error)
 	}
@@ -27,18 +29,18 @@ func (s Service) ExecuteCommand(commandName string, args []string, wg *sync.Wait
 	if err != nil {
 		fmt.Printf("[WARN] Command was not found. Service Name: %v, commandName: %v\n", s.Name, commandName)
 	}
-
-	wg.Done()
 }
 
 func (s Service) executeCustomCommand(commandName string, args []string) error {
 	scriptPath := filepath.Join(s.GetScriptDir(), commandName)
 
 	if _, err := os.Stat(scriptPath); os.IsNotExist(err) {
-		return errors.New("Default command does not exist")
+		return errors.New("Custom command does not exist")
 	}
 
-	s.ExecuteCommandWithLog(commandName, scriptPath)
+	cmdName := fmt.Sprintf("sudo --preserve-env --user %s %s", s.GetUserName(), scriptPath)
+
+	s.ExecuteCommandWithLog(commandName, cmdName)
 
 	return nil
 }
@@ -53,6 +55,8 @@ func (s Service) executeDefaultCommand(commandName string, args []string) error 
 		s.Pull(args)
 	case "add_script":
 		s.AddScript(args)
+	case "add_example":
+		s.AddExample(args)
 	default:
 		return errors.New("Default command does not exist")
 	}

@@ -51,10 +51,10 @@ func (s Service) GetVariables() map[string]string {
 
 	variables["GOPATH"] = filepath.Join(s.GetServiceDir(), "go")
 
-	variables["USER"] = s.GetUserName()
-	variables["GROUP"] = s.GetUserGroup()
-	variables["UID"] = s.GetUID()
-	variables["GID"] = s.GetGID()
+	variables["CN_USER"] = s.GetUserName()
+	variables["CN_GROUP"] = s.GetUserGroup()
+	variables["CN_UID"] = s.GetUID()
+	variables["CN_GID"] = s.GetGID()
 
 	return variables
 }

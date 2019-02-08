@@ -178,16 +178,28 @@ func (s Service) GetGID() string {
 	return g.Gid
 }
 
-func (s Service) GetUIDInt() uint32 {
+func (s Service) GetUIDUint32() uint32 {
 	u, _ := strconv.ParseUint(s.GetUID(), 10, 32)
 
 	return uint32(u)
 }
 
-func (s Service) GetGIDInt() uint32 {
+func (s Service) GetGIDUint32() uint32 {
 	u, _ := strconv.ParseUint(s.GetGID(), 10, 32)
 
 	return uint32(u)
+}
+
+func (s Service) GetUIDInt() int {
+	u, _ := strconv.Atoi(s.GetUID())
+
+	return u
+}
+
+func (s Service) GetGIDInt() int {
+	u, _ := strconv.Atoi(s.GetGID())
+
+	return u
 }
 
 func (s Service) getGroup() (*user.Group, error) {

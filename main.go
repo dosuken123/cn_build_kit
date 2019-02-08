@@ -5,11 +5,16 @@ import (
 	"log"
 	"os"
 	"sync"
+	"syscall"
 
 	"github.com/dosuken123/cn_build_kit/service"
 )
 
 func main() {
+	// NOTE: In order to correctly set file permission with Mkdir commands,
+	// overwrite umask value.
+	syscall.Umask(0)
+
 	args := os.Args
 
 	if len(args) < 3 {

@@ -32,8 +32,6 @@ func (s Service) ExecuteCommandWithLog(commandName string, script string) {
 
 	cmdArgs := strings.Fields(script)
 	cmd := exec.Command(cmdArgs[0], cmdArgs[1:len(cmdArgs)]...)
-	// cmd.SysProcAttr = &syscall.SysProcAttr{}
-	// cmd.SysProcAttr.Credential = &syscall.Credential{Uid: s.GetUIDInt(), Gid: s.GetGIDInt()}
 	cmd.Env = os.Environ()
 
 	for key, value := range s.GetVariables() {
@@ -74,7 +72,7 @@ func openFile(logDir string, commandName string) *os.File {
 	}
 
 	logFilePath := filepath.Join(logDir, commandName)
-	f, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, os.ModePerm)
 
 	if err != nil {
 		log.Fatal("Failed to open log file ", err)

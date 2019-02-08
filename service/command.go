@@ -28,8 +28,13 @@ func (s Service) Pull(args []string) {
 		return
 	}
 
-	s.ExecuteCommandWithLog("pull", "git checkout master")
-	s.ExecuteCommandWithLog("pull", "git pull origin master")
+	cmdName := fmt.Sprintf("sudo --user %s %s", s.GetUserName(), "git checkout master")
+
+	s.ExecuteCommandWithLog("pull", cmdName)
+
+	cmdName = fmt.Sprintf("sudo --user %s %s", s.GetUserName(), "git pull origin master")
+
+	s.ExecuteCommandWithLog("pull", cmdName)
 }
 
 func (s Service) Clean(args []string) {
@@ -63,9 +68,31 @@ func (s Service) AddScript(args []string) {
 		log.Fatal(err)
 	}
 
+	if err := os.Chown(scriptPath, s.GetUIDInt(), s.GetGIDInt()); err != nil {
+		log.Fatal(err)
+	}
+
 	if val, ok := parsedArgs["script"]; ok {
 		ioutil.WriteFile(scriptPath, []byte(val), os.ModePerm)
 	}
+}
+
+func (s Service) AddExample(args []string) {
+	parsedArgs := parseArgSet(args)
+
+	cmdName := fmt.Sprintf("sudo --user %s mkdir -p --mode %s %s", s.GetUserName(), "777", s.GetExampleDir())
+
+	s.ExecuteCommandWithLog("add_example", cmdName)
+
+	examplePath := filepath.Join(s.GetExampleDir(), parsedArgs["name"])
+
+	cmdName = fmt.Sprintf("sudo --user %s touch %s", s.GetUserName(), examplePath)
+
+	s.ExecuteCommandWithLog("add_example", cmdName)
+
+	cmdName = fmt.Sprintf("sudo --user %s chmod %s %s", s.GetUserName(), "777", examplePath)
+
+	s.ExecuteCommandWithLog("add_example", cmdName)
 }
 
 func parseArgSet(args []string) map[string]string {

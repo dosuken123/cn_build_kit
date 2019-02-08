@@ -1,22 +1,16 @@
 #!/usr/bin/env bash
 
-echo ${USER}
-echo ${GROUP}
-echo ${UID}
-echo ${GID}
-echo ${CN_OPENSSH_CACHE_DIR}
+mkdir -p ${CN_OPENSSH_CACHE_DIR}
 
-# mkdir -p ${CN_OPENSSH_CACHE_DIR}
+if [ ! -f ${CN_OPENSSH_CACHE_DIR}/sshd_config ]
+then
+	sed -e "s|/home/git/openssh/ssh_host_rsa_key|${CN_OPENSSH_CACHE_DIR}/ssh_host_rsa_key|g" \
+        -e "s|/home/git/.ssh/authorized_keys|/${CN_SHELL_DATA_DIR}/authorized_keys|g" \
+		-e "s/GDK_USERNAME/${CN_USER}/g" \
+		${CN_OPENSSH_EXAMPLE_DIR}/sshd_config.example > ${CN_OPENSSH_CACHE_DIR}/sshd_config
+fi
 
-# if [ ! -f ${CN_OPENSSH_CACHE_DIR}/sshd_config ]
-# then
-# 	sed -e "s|/home/git/openssh/ssh_host_rsa_key|${CN_OPENSSH_CACHE_DIR}/ssh_host_rsa_key|g" \
-#         -e "s|/home/git/.ssh/authorized_keys|/${CN_SHELL_DATA_DIR}/authorized_keys|g" \
-# 		-e "s/GDK_USERNAME/${user_name}/g" \
-# 		${CN_OPENSSH_EXAMPLE_DIR}/sshd_config.example > ${CN_OPENSSH_CACHE_DIR}/sshd_config
-# fi
-
-# if [ ! -f ${CN_OPENSSH_CACHE_DIR}/ssh_host_rsa_key ]
-# then
-#     ssh-keygen -f ${CN_OPENSSH_CACHE_DIR}/ssh_host_rsa_key -N '' -t rsa
-# fi
+if [ ! -f ${CN_OPENSSH_CACHE_DIR}/ssh_host_rsa_key ]
+then
+    ssh-keygen -f ${CN_OPENSSH_CACHE_DIR}/ssh_host_rsa_key -N '' -t rsa
+fi
