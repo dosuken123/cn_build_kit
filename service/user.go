@@ -14,6 +14,8 @@ func (s Service) EnsureUser() error {
 		return nil
 	}
 
+	s.CleanLog("ensure_user")
+
 	// Add current user to the group
 	groupName := s.addGroup()
 	userName := s.addUser(groupName)

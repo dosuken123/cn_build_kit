@@ -28,7 +28,7 @@ group = "default"
   repo_url = "https://gitlab.com/gitlab-org/gitaly.git"
   clone_depth = 1
   [service.user]
-  name = "git"
+  name = "shinya"
 
 [[service]]
 name = "webpack"
